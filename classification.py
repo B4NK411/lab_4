@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
-
+from sklearn.metrics import confusion_matrix, classification_report
 
 data = np.loadtxt("kinematic_features.txt")
 ctrl_data = data[:41]
@@ -55,7 +55,46 @@ plt.title('Minkowski Distance between Two Feature Vectors')
 plt.xlabel('r')
 plt.ylabel('Distance')
 plt.grid(True)
-plt.xticks(r_values)
 plt.show()
 # it is observed that as r increases, the distance decreases
 
+# Split the data into training and testing sets
+X = data[:,:]
+y = np.concatenate((np.zeros(41), np.ones(55)))
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Initialize and train the KNN classifier
+knn = KNeighborsClassifier(n_neighbors=3)
+knn.fit(X_train, y_train)
+
+# Predict on training and test data
+y_train_pred = knn.predict(X_train)
+y_test_pred = knn.predict(X_test)
+
+# Evaluate confusion matrix and performance metrics
+conf_matrix_train = confusion_matrix(y_train, y_train_pred)
+conf_matrix_test = confusion_matrix(y_test, y_test_pred)
+
+# Print confusion matrix and classification report for training data
+print("Confusion Matrix (Training Data):")
+print(conf_matrix_train)
+print("\nClassification Report (Training Data):")
+print(classification_report(y_train, y_train_pred))
+
+# Print confusion matrix and classification report for test data
+print("Confusion Matrix (Test Data):")
+print(conf_matrix_test)
+print("\nClassification Report (Test Data):")
+print(classification_report(y_test, y_test_pred))
+
+accuracy=[]
+for i in range (1,12):
+    knn = KNeighborsClassifier(n_neighbors=i)
+    knn.fit(X_train, y_train)
+    accuracy.append(knn.score(X_test,y_test))
+plt.plot([i for i in range(len(accuracy))],accuracy, marker='o', linestyle='-')
+plt.title('Accuracy Vs K ')
+plt.xlabel('K')
+plt.ylabel('Accuracy')
+plt.show()
